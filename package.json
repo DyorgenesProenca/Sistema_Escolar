@@ -1,0 +1,24 @@
+{
+  "name": "cadastro-de-usuarios",
+  "version": "1.0.0",
+  "description": "este projeto tem como objetivo criar um cadastro de usuários utilizando Node.js, Express e MongoDB. O sistema permitirá que os usuários se registrem, façam login e gerenciem suas informações pessoais.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DyorgenesProenca/Projeto-Node.js.git"
+  },
+  "keywords": [],
+  "author": "Dyorgenes Proença",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/DyorgenesProenca/Projeto-Node.js/issues"
+  },
+  "homepage": "https://github.com/DyorgenesProenca/Projeto-Node.js#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
