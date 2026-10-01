@@ -1,6 +1,7 @@
 import db from '../db.js';
+import bcrypt from 'bcrypt'; // Importa bcrypt para hashing de senhas
 
-// 1. ROTA DE LOGIN (POST /users/login)
+// 1. ATUALIZAÇÃO DA ROTA DE LOGIN (POST /users/login)
 export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
@@ -9,7 +10,6 @@ export const loginUser = async (req, res) => {
     }
 
     try {
-        // Busca o usuário pelo e-mail
         const [users] = await db.execute('SELECT id, name, email, password, role FROM users WHERE email = ?', [email]);
 
         if (users.length === 0) {
@@ -18,12 +18,13 @@ export const loginUser = async (req, res) => {
 
         const user = users[0];
 
-        // Verifica a senha (em texto limpo por enquanto, como inserido no script SQL)
-        if (user.password !== password) {
+        // 🌟 COMPARAÇÃO SEGURA: O bcrypt descriptografa internamente o hash do banco e compara com o texto limpo digitado
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordCorrect) {
             return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
         }
 
-        // Se o login der certo, envia os dados do usuário (exceto a senha) para o Front-end
         res.json({
             message: 'Login realizado com sucesso!',
             user: {
@@ -39,26 +40,28 @@ export const loginUser = async (req, res) => {
     }
 };
 
-// 2. ROTA DE CADASTRO (POST /users)
+// 2. ATUALIZAÇÃO DA ROTA DE CADASTRO (POST /users)
 export const createUser = async (req, res) => {
     const { name, email, password, role } = req.body;
 
     if (!name || !email || !password || !role) {
-        return res.status(400).json({ error: 'Todos os campos (name, email, password, role) são obrigatórios.' });
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }
 
-    // Valida se o tipo de usuário enviado é válido
     if (role !== 'professor' && role !== 'aluno') {
         return res.status(400).json({ error: "O campo role deve ser 'professor' ou 'aluno'." });
     }
 
     try {
-        // Insere o novo usuário na tabela 'users'
+        // 🌟 CRIPTOGRAFIA: Gera o hash da senha com custo de processamento 10 (padrão seguro)
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Salvamos a senha criptografada (hashedPassword) no banco de dados
         const queryUser = 'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)';
-        const [resultUser] = await db.execute(queryUser, [name, email, password, role]);
+        const [resultUser] = await db.execute(queryUser, [name, email, hashedPassword, role]);
         const newUserId = resultUser.insertId;
 
-        // SE for um aluno, cria automaticamente o boletim dele zerado na tabela 'grades'
         if (role === 'aluno') {
             await db.execute('INSERT INTO grades (student_id) VALUES (?)', [newUserId]);
         }
