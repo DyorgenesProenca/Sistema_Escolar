@@ -1,29 +1,145 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Escolar - Login e Registro</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .login-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 400px; text-align: center; transition: 0.3s; }
-        h1 { color: #4a5568; margin-bottom: 10px; font-size: 28px; }
-        p { color: #718096; margin-bottom: 25px; font-size: 14px; }
-        .input-group { margin-bottom: 15px; text-align: left; }
-        label { display: block; color: #4a5568; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
-        input { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; transition: 0.3s; }
-        input:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102,126,234,0.2); }
-        button { width: 100%; padding: 14px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        button:hover { background: #5a67d8; transform: translateY(-1px); }
-        .toggle-btn { background: none; color: #667eea; font-size: 14px; font-weight: 600; border: none; cursor: pointer; margin-top: 15px; width: auto; padding: 0; }
-        .toggle-btn:hover { text-decoration: underline; background: none; transform: none; }
-        .error { color: #e53e3e; margin-top: 15px; font-size: 14px; display: none; }
-        .success { color: #38a169; margin-top: 15px; font-size: 14px; display: none; }
-        .admin-link { margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.6); text-decoration: none; font-family: monospace; transition: 0.2s; }
-        .admin-link:hover { color: white; text-decoration: underline; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        h1 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        p {
+            color: #718096;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .toggle-btn {
+            background: none;
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+            width: auto;
+            padding: 0;
+        }
+
+        .toggle-btn:hover {
+            text-decoration: underline;
+            background: none;
+            transform: none;
+        }
+
+        .error {
+            color: #e53e3e;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success {
+            color: #38a169;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .admin-link {
+            margin-top: 20px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-family: monospace;
+            transition: 0.2s;
+        }
+
+        .admin-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="login-card" id="cardContainer">
@@ -31,7 +147,7 @@
         <div id="loginView">
             <h1>📐 Delta Math</h1>
             <p>Acesse o portal de matemática</p>
-            
+
             <form id="loginForm">
                 <div class="input-group">
                     <label>E-mail</label>
@@ -50,7 +166,7 @@
         <div id="registerView" style="display: none;">
             <h1>📝 Registro</h1>
             <p>Criar nova conta de Professor</p>
-            
+
             <form id="registerProfessorForm">
                 <div class="input-group">
                     <label>Nome Completo</label>
@@ -74,9 +190,6 @@
         <div class="success" id="successMessage"></div>
     </div>
 
-    <!-- Rota oculta e acessível para o Administrador do Sistema -->
-    <a href="admin-dados.html" class="admin-link">⚡ [Acesso Restrito: ROOT_ADMIN_PANEL]</a>
-
     <script>
         const errorDiv = document.getElementById('errorMessage');
         const successDiv = document.getElementById('successMessage');
@@ -98,7 +211,7 @@
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             errorDiv.style.display = 'none';
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
@@ -111,13 +224,19 @@
 
                 const data = await response.json();
 
+                // Substitua o trecho de redirecionamento do seu loginForm por este:
                 if (response.ok) {
                     localStorage.setItem('loggedUser', JSON.stringify(data.user));
-                    if (data.user.role === 'professor') {
+
+                    // Redirecionamento inteligente baseado no nível de acesso
+                    if (data.user.role === 'admin') {
+                        window.location.href = 'admin-dados.html';
+                    } else if (data.user.role === 'professor') {
                         window.location.href = 'professor.html';
                     } else {
                         window.location.href = 'aluno.html';
                     }
+
                 } else {
                     errorDiv.textContent = data.error;
                     errorDiv.style.display = 'block';
@@ -163,4 +282,5 @@
         });
     </script>
 </body>
+
 </html>

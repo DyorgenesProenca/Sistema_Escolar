@@ -1,7 +1,7 @@
 import db from '../db.js';
-import bcrypt from 'bcrypt'; // Importa bcrypt para hashing de senhas
+import bcrypt from 'bcrypt';
 
-// 1. ATUALIZAÇÃO DA ROTA DE LOGIN (POST /users/login)
+// 1. ROTA DE LOGIN ATUALIZADA (POST /users/login)
 export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
@@ -18,8 +18,13 @@ export const loginUser = async (req, res) => {
 
         const user = users[0];
 
-        // 🌟 COMPARAÇÃO SEGURA: O bcrypt descriptografa internamente o hash do banco e compara com o texto limpo digitado
-        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        // 🌟 SUPORTE ADMIN / SENHAS ANTIGAS: Se a senha no banco for igual ao texto limpo digitado (ex: admin123)
+        let isPasswordCorrect = user.password === password;
+
+        // Se não for igual direto, tenta comparar usando o hash do bcrypt
+        if (!isPasswordCorrect) {
+            isPasswordCorrect = await bcrypt.compare(password, user.password);
+        }
 
         if (!isPasswordCorrect) {
             return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
@@ -27,12 +32,7 @@ export const loginUser = async (req, res) => {
 
         res.json({
             message: 'Login realizado com sucesso!',
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            user: { id: user.id, name: user.name, email: user.email, role: user.role }
         });
     } catch (error) {
         console.error(error);
@@ -40,7 +40,7 @@ export const loginUser = async (req, res) => {
     }
 };
 
-// 2. ATUALIZAÇÃO DA ROTA DE CADASTRO (POST /users)
+// 2. ROTA DE CADASTRO COM CHECAGEM DE E-MAIL DUPLICADO (POST /users)
 export const createUser = async (req, res) => {
     const { name, email, password, role } = req.body;
 
@@ -48,20 +48,25 @@ export const createUser = async (req, res) => {
         return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }
 
-    if (role !== 'professor' && role !== 'aluno') {
-        return res.status(400).json({ error: "O campo role deve ser 'professor' ou 'aluno'." });
+    if (role !== 'professor' && role !== 'aluno' && role !== 'admin') {
+        return res.status(400).json({ error: "Role deve ser 'professor', 'aluno' ou 'admin'." });
     }
 
     try {
-        // 🌟 CRIPTOGRAFIA: Gera o hash da senha com custo de processamento 10 (padrão seguro)
+        // 🌟 SEGURANÇA EXTRA: Verifica explicitamente antes se o e-mail já existe
+        const [existingUser] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
+        if (existingUser.length > 0) {
+            return res.status(400).json({ error: 'Este endereço de e-mail já está sendo utilizado.' });
+        }
+
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Salvamos a senha criptografada (hashedPassword) no banco de dados
         const queryUser = 'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)';
         const [resultUser] = await db.execute(queryUser, [name, email, hashedPassword, role]);
         const newUserId = resultUser.insertId;
 
+        // Cria boletim automático apenas se for aluno
         if (role === 'aluno') {
             await db.execute('INSERT INTO grades (student_id) VALUES (?)', [newUserId]);
         }
@@ -72,12 +77,10 @@ export const createUser = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).json({ error: 'Este e-mail já está cadastrado.' });
-        }
         res.status(500).json({ error: 'Erro ao salvar o usuário no banco de dados.' });
     }
 };
+
 
 // 3. BUSCAR TODOS OS USUÁRIOS (GET /users)
 export const getUsers = async (req, res) => {
