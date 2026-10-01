@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import * as userController from './Controllers/userController.js'; 
-import * as gradeController from '.Ccontrollers/gradeController.js'; // 1. Importa o novo controller
+import * as gradeController from './Controllers/gradeController.js'; // 1. Importa o novo controller
 
 const app = express();
 app.use(express.json());

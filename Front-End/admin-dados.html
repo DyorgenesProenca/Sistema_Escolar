@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoria Geral do Banco</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; }
+        body { background: #1a202c; color: #a0aec0; padding: 30px; }
+        h1 { color: #ecc94b; margin-bottom: 20px; font-size: 24px; }
+        .container { background: #2d3748; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #4a5568; }
+        th { background: #4a5568; color: white; }
+        .delete-btn { background: #e53e3e; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-family: monospace; }
+        .delete-btn:hover { background: #c53030; }
+        .nav-link { display: inline-block; margin-bottom: 20px; color: #63b3ed; text-decoration: none; }
+        .nav-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <h1>🖥️ Banco de Dados: Tabela [users]</h1>
+    <a href="login.html" class="nav-link"><- Voltar para o Login</a>
+
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Nível (Role)</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="adminUsersTable">
+                <!-- Inserido dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadAllUsersSystem() {
+            const response = await fetch('http://localhost:3000/users');
+            const users = await response.json();
+            const tbody = document.getElementById('adminUsersTable');
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${user.id}</td>
+                    <td><span style="color:white">${user.name}</span></td>
+                    <td>${user.email}</td>
+                    <td><span style="color: ${user.role === 'professor' ? '#f6e05e' : '#9f7aea'}">[${user.role}]</span></td>
+                    <td><button class="delete-btn" onclick="deleteUserSystem(${user.id})">DROP_USER</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function deleteUserSystem(id) {
+            if (confirm(`Executar comando DELETE para o ID #${id}?`)) {
+                const response = await fetch(`http://localhost:3000/users/${id}`, { method: 'DELETE' });
+                if (response.ok) { loadAllUsersSystem(); }
+                else { alert("Erro ao deletar."); }
+            }
+        }
+
+        loadAllUsersSystem();
+    </script>
+</body>
+</html>

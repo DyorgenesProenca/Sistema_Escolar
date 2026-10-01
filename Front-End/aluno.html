@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espaço do Aluno</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: #f0f4f8; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .student-card { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 550px; text-align: center; position: relative;}
+        .avatar-header { background: linear-gradient(135deg, #7f5af0 0%, #2cb67d 100%); color: white; padding: 30px; border-radius: 15px; margin-bottom: 25px; }
+        h1 { font-size: 24px; margin-bottom: 5px; }
+        .grid-notas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .nota-box { background: #f8fafc; border: 2px solid #e2e8f0; padding: 15px; border-radius: 12px; }
+        .nota-box span { display: block; font-size: 12px; color: #718096; font-weight: bold; margin-bottom: 5px; }
+        .nota-box strong { font-size: 20px; color: #2d3748; }
+        .result-box { padding: 20px; border-radius: 12px; font-size: 22px; font-weight: bold; color: white; margin-bottom: 20px; }
+        .status-Aprovado { background-color: #48bb78; box-shadow: 0 4px 14px rgba(72,187,120,0.4); }
+        .status-Reprovado { background-color: #f56565; box-shadow: 0 4px 14px rgba(245,101,101,0.4); }
+        .logout-btn { background: #a0aec0; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        .logout-btn:hover { background: #718096; }
+    </style>
+</head>
+<body>
+
+    <div class="student-card">
+        <div class="avatar-header">
+            <h1 id="studentName">Carregando...</h1>
+            <p>📝 Seu Boletim de Matemática</p>
+        </div>
+
+        <div class="grid-notas">
+            <div class="nota-box"><span>Nota 1</span><strong id="n1">-</strong></div>
+            <div class="nota-box"><span>Nota 2</span><strong id="n2">-</strong></div>
+            <div class="nota-box"><span>Nota 3</span><strong id="n3">-</strong></div>
+            <div class="nota-box"><span>Nota 4</span><strong id="n4">-</strong></div>
+        </div>
+
+        <div style="font-size: 16px; color:#4a5568; margin-bottom: 5px;">Sua Média Geral</div>
+        <div class="result-box" id="resultContainer">
+            Média: <span id="mediaText">0.0</span> — <span id="statusText">Verificando</span>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">Sair do Portal</button>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('loggedUser'));
+        if (!user || user.role !== 'aluno') { window.location.href = 'login.html'; }
+        document.getElementById('studentName').textContent = `Estudante: ${user.name} ✏️`;
+
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+        async function loadMyGrades() {
+    try {
+        console.log("Buscando notas para o Aluno ID:", user.id);
+        const response = await fetch(`http://localhost:3000/grades/${user.id}`);
+        
+        if (!response.ok) {
+            console.error("O servidor respondeu com erro:", response.status);
+            document.getElementById('statusText').textContent = "NÃO ENCONTRADO";
+            return;
+        }
+
+        let data = await response.json();
+        console.log("Dados recebidos do servidor:", data);
+
+        // 🌟 SE SEGURANÇA: Se o banco devolver uma lista/array, pegamos a primeira linha.
+        // Se já vier como objeto direto, usamos ele mesmo.
+        const boletim = Array.isArray(data) ? data[0] : data;
+
+        if (boletim) {
+                // Garante a conversão correta de strings numéricas do MySQL para HTML
+            document.getElementById('n1').textContent = Number(boletim.nota1 ?? 0).toFixed(1);
+            document.getElementById('n2').textContent = Number(boletim.nota2 ?? 0).toFixed(1);
+            document.getElementById('n3').textContent = Number(boletim.nota3 ?? 0).toFixed(1);
+            document.getElementById('n4').textContent = Number(boletim.nota4 ?? 0).toFixed(1);
+            
+            const mediaVal = Number(boletim.media ?? 0);
+            document.getElementById('mediaText').textContent = mediaVal.toFixed(1);
+            
+            // Tratamento rigoroso de string para bater exatamente com o seu CSS do cabeçalho
+            let statusText = boletim.status || 'Reprovado';
+            // Força a primeira letra a ser Maiúscula e o resto minúscula (ex: Aprovado)
+            statusText = statusText.charAt(0).toUpperCase() + statusText.slice(1).toLowerCase();
+            
+            document.getElementById('statusText').textContent = statusText.toUpperCase();
+            
+            const box = document.getElementById('resultContainer');
+            box.className = `result-box status-${statusText}`;
+
+        } else {
+            console.warn("Nenhum dado de boletim encontrado dentro da resposta.");
+        }
+    } catch (err) {
+        console.error("Erro catastrófico ao buscar notas:", err);
+    }
+}
+        loadMyGrades();
+    </script>
+</body>
+</html>
