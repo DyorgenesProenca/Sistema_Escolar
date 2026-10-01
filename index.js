@@ -11,6 +11,7 @@ app.use(cors());
 app.post('/users/login', userController.loginUser);
 app.get('/users', userController.getUsers);
 app.post('/users', userController.createUser);
+app.put('/users/:id', userController.updateUser); 
 app.delete('/users/:id', userController.deleteUser);
 
 // Rotas de Notas da Escola (Novas)

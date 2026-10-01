@@ -94,77 +94,138 @@
 
     <script>
         // Restringe acesso de quem não está logado como professor
-        const user = JSON.parse(localStorage.getItem('loggedUser'));
-        if (!user || user.role !== 'professor') { window.location.href = 'login.html'; }
-        document.getElementById('welcomeText').textContent = `Olá, Prof. ${user.name}! 👨‍🏫`;
+const user = JSON.parse(localStorage.getItem('loggedUser'));
+if (!user || user.role !== 'professor') { window.location.href = 'login.html'; }
+document.getElementById('welcomeText').textContent = `Olá, Prof. ${user.name}! 👨‍🏫`;
 
-        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
-        // Carregar a lista de alunos com notas
-        async function loadGrades() {
-            const response = await fetch('http://localhost:3000/grades');
-            const data = await response.json();
-            const tbody = document.getElementById('gradesTableBody');
-            tbody.innerHTML = '';
+// Carregar a lista de alunos com notas e botões de ação
+async function loadGrades() {
+    const response = await fetch('http://localhost:3000/grades');
+    const data = await response.json();
+    const tbody = document.getElementById('gradesTableBody');
+    tbody.innerHTML = '';
 
-            data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${item.name}</strong><br><small style="color:#718096">${item.email}</small></td>
-                    <td><input type="number" step="0.1" class="nota-input" id="n1-${item.id}" value="${item.nota1}"></td>
-                    <td><input type="number" step="0.1" class="nota-input" id="n2-${item.id}" value="${item.nota2}"></td>
-                    <td><input type="number" step="0.1" class="nota-input" id="n3-${item.id}" value="${item.nota3}"></td>
-                    <td><input type="number" step="0.1" class="nota-input" id="n4-${item.id}" value="${item.nota4}"></td>
-                    <td><strong>${Number(item.media).toFixed(1)}</strong></td>
-                    <td><span class="badge ${item.status}">${item.status}</span></td>
-                    <td><button class="save-grade-btn" onclick="saveGrades(${item.id})">Salvar</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+    data.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <strong id="name-text-${item.id}">${item.name}</strong><br>
+                <small id="email-text-${item.id}" style="color:#718096">${item.email}</small>
+                <div style="margin-top: 8px; display: flex; gap: 5px;">
+                    <!-- Botões corrigidos sem misturar texto -->
+                    <button type="button" style="padding: 4px 8px; font-size: 11px; background: #4a5568; width: auto; cursor: pointer; color: white;" onclick="editUser(${item.id})">Editar Cadastro</button>
+                    <button type="button" style="padding: 4px 8px; font-size: 11px; background: #e53e3e; width: auto; cursor: pointer; color: white;" onclick="deleteUser(${item.id}, '${item.name}')">Excluir</button>
+                </div>
+            </td>
+            <td><input type="number" step="0.1" class="nota-input" id="n1-${item.id}" value="${item.nota1}"></td>
+            <td><input type="number" step="0.1" class="nota-input" id="n2-${item.id}" value="${item.nota2}"></td>
+            <td><input type="number" step="0.1" class="nota-input" id="n3-${item.id}" value="${item.nota3}"></td>
+            <td><input type="number" step="0.1" class="nota-input" id="n4-${item.id}" value="${item.nota4}"></td>
+            <td><strong>${Number(item.media).toFixed(1)}</strong></td>
+            <td><span class="badge ${item.status}">${item.status}</span></td>
+            <td><button class="save-grade-btn" onclick="saveGrades(${item.id})">Salvar Notas</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 
-        // Lançar as notas editadas
-        async function saveGrades(studentId) {
-            const nota1 = document.getElementById(`n1-${studentId}`).value;
-            const nota2 = document.getElementById(`n2-${studentId}`).value;
-            const nota3 = document.getElementById(`n3-${studentId}`).value;
-            const nota4 = document.getElementById(`n4-${studentId}`).value;
 
-            const response = await fetch(`http://localhost:3000/grades/${studentId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nota1, nota2, nota3, nota4 })
-            });
+// Função para o Professor EDITAR Nome e E-mail do Aluno
+async function editUser(id) {
+    try {
+        // Pega o texto atual que está renderizado na linha da tabela
+        const currentName = document.getElementById(`name-text-${id}`).textContent;
+        const currentEmail = document.getElementById(`email-text-${id}`).textContent;
 
-            if (response.ok) { alert('Boletim atualizado!'); loadGrades(); }
-            else { alert('Erro ao salvar notas.'); }
-        }
+        // Abre os prompts na tela do navegador solicitando os novos dados
+        const newName = prompt("Digite o novo nome do aluno:", currentName);
+        if (newName === null) return; // Se clicar em cancelar, interrompe a função
 
-        // Cadastro de novos usuários
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const role = document.getElementById('regRole').value;
+        const newEmail = prompt("Digite o novo e-mail do aluno:", currentEmail);
+        if (newEmail === null) return; // Se clicar em cancelar, interrompe a função
 
-            const response = await fetch('http://localhost:3000/users', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password, role })
-            });
-
-            if (response.ok) {
-                alert('Cadastrado com sucesso!');
-                document.getElementById('registerForm').reset();
-                loadGrades();
-            } else {
-                const err = await response.json();
-                alert(err.error);
-            }
+        // Faz a requisição PUT para a rota do seu backend Node.js
+        const response = await fetch(`http://localhost:3000/users/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: newName, email: newEmail })
         });
 
+        if (response.ok) {
+            alert('Cadastro do aluno atualizado com sucesso!');
+            loadGrades(); // Recarrega a tabela na tela com os nomes novos
+        } else {
+            const err = await response.json();
+            alert(err.error || 'Erro ao atualizar cadastro.');
+        }
+    } catch (error) {
+        console.error("Erro ao tentar editar usuário:", error);
+        alert("Não foi possível conectar ao servidor.");
+    }
+}
+
+
+// Função para o Professor EXCLUIR um Aluno do sistema
+async function deleteUser(id, name) {
+    if (confirm(`Tem certeza absoluta que deseja excluir o aluno "${name}"? Todas as notas dele serão apagadas!`)) {
+        const response = await fetch(`http://localhost:3000/users/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert('Aluno excluído com sucesso!');
+            loadGrades(); // Atualiza a lista na tela
+        } else {
+            alert('Erro ao excluir o aluno.');
+        }
+    }
+}
+
+// Lançar as notas editadas
+async function saveGrades(studentId) {
+    const nota1 = document.getElementById(`n1-${studentId}`).value;
+    const nota2 = document.getElementById(`n2-${studentId}`).value;
+    const nota3 = document.getElementById(`n3-${studentId}`).value;
+    const nota4 = document.getElementById(`n4-${studentId}`).value;
+
+    const response = await fetch(`http://localhost:3000/grades/${studentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nota1, nota2, nota3, nota4 })
+    });
+
+    if (response.ok) { alert('Boletim atualizado!'); loadGrades(); }
+    else { alert('Erro ao salvar notas.'); }
+}
+
+// Cadastro de novos usuários
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const role = document.getElementById('regRole').value;
+
+    const response = await fetch('http://localhost:3000/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role })
+    });
+
+    if (response.ok) {
+        alert('Cadastrado com sucesso!');
+        document.getElementById('registerForm').reset();
         loadGrades();
+    } else {
+        const err = await response.json();
+        alert(err.error);
+    }
+});
+
+loadGrades();
+
     </script>
 </body>
 </html>

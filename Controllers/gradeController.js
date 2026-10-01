@@ -68,11 +68,11 @@ export const getStudentGrades = async (req, res) => {
     }
 };
 
-// 3. BUSCAR LISTA COMPLETA DE ALUNOS COM NOTAS (GET /grades) - Para a visão Geral/Professor
+// 3. BUSCAR LISTA COMPLETA DE ALUNOS COM NOTAS (GET /grades)
 export const getAllGrades = async (req, res) => {
     try {
         const query = `
-            SELECT u.id, u.name, u.email, g.nota1, g.nota2, g.nota3, g.nota4, g.media, g.status
+            SELECT u.id AS id, u.name, u.email, g.nota1, g.nota2, g.nota3, g.nota4, g.media, g.status
             FROM users u
             LEFT JOIN grades g ON u.id = g.student_id
             WHERE u.role = 'aluno'
@@ -84,3 +84,4 @@ export const getAllGrades = async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar listagem de notas.' });
     }
 };
+

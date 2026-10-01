@@ -104,3 +104,30 @@ export const deleteUser = async (req, res) => {
         res.status(500).json({ error: 'Erro ao deletar o usuário.' });
     }
 };
+// 5. ATUALIZAR DADOS DO USUÁRIO (PUT /users/:id) - Para o Professor editar Nome/E-mail
+export const updateUser = async (req, res) => {
+    const { id } = req.params;
+    const { name, email } = req.body;
+
+    if (!name || !email) {
+        return res.status(400).json({ error: 'Nome e E-mail são obrigatórios.' });
+    }
+
+    try {
+        const query = 'UPDATE users SET name = ?, email = ? WHERE id = ?';
+        const [result] = await db.execute(query, [name, email, id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+
+        res.json({ message: 'Dados do usuário atualizados com sucesso!' });
+    } catch (error) {
+        console.error(error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: 'Este e-mail já está sendo usado por outro usuário.' });
+        }
+        res.status(500).json({ error: 'Erro ao atualizar dados do usuário.' });
+    }
+};
+
