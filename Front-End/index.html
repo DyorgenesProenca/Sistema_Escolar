@@ -23,10 +23,19 @@
         <input type="number" id="age" placeholder="Idade" required>
         <button type="submit">Cadastrar</button>
     </form>
-
+    <h2>Atualizar idade do  Usuário</h2>
+    <form id="updateForm">
+        <input type="number" id="updateId" placeholder="ID do Usuário" required>
+        <input type="number" id="updateAge" placeholder="Nova Idade" required>
+        <button type="submit">Atualizar Idade</button>
+    </form>
+    <h2>Deletar Usuário</h2>
+    <form id="deleteForm">
+        <input type="number" id="deleteId" placeholder="ID do Usuário" required>
+        <button type="submit">Deletar Usuário</button>
+    </form>
     <h2>Usuários Cadastrados</h2>
     <ul id="userList"></ul>
-
     <!-- Conecta o JavaScript do front-end -->
     <script src="app.js"></script>
 </body>

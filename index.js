@@ -39,6 +39,50 @@ app.post('/users', async (req, res) => {
     }
 });
 
+//ROTA PUT: Atualiza a idade de um  usuário existente no banco de dados MySQL
+app.put('/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { age } = req.body;
+    
+    // Validação simples
+    if (!age) {
+        return res.status(400).json({ error: 'O campo age é obrigatório.' });
+    }
+
+    try {
+        const query = 'UPDATE users SET age = ? WHERE id = ?';
+        const [result] = await db.execute(query, [age, id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+
+        res.json({ message: 'Idade atualizada com sucesso.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao atualizar a idade do usuário no banco de dados.' });
+    }
+});
+
+//ROTA DELETE: Deleta um usuário existente no banco de dados MySQL
+app.delete('/users/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const query = 'DELETE FROM users WHERE id = ?';
+        const [result] = await db.execute(query, [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+
+        res.json({ message: 'Usuário deletado com sucesso.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao deletar o usuário no banco de dados.' });
+    }
+});
+
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });
