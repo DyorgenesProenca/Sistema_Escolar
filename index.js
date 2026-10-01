@@ -1,8 +1,10 @@
 import express from 'express';
 import db from './db.js'; // Importa a conexão com o banco (lembre-se do .js no final)
+import cors from 'cors';
 
 const app = express();
 app.use(express.json());
+app.use(cors()); // Habilita CORS para permitir requisições de diferentes origens
 
 // ROTA GET: Busca os usuários diretamente do banco de dados MySQL
 app.get('/users', async (req, res) => {
